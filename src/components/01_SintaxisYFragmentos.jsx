@@ -13,12 +13,17 @@
 //    - <EtiquetaInfo /> (May) -> Componente personalizado de React
 // ============================================================================
 
+import { useState } from 'react';
+
 // Pequeño componente auxiliar (obligatoriamente empieza en MAYÚSCULA)
 function EtiquetaInfo({ texto }) {
   return <span className="pill">{texto}</span>;
 }
 
 export default function SintaxisYFragmentos() {
+  const [nombre, setNombre] = useState('');
+  const nombreLimpio = nombre.trim();
+
   // Este bloque demuestra el uso de Fragment (<>...</>):
   // Si inspeccionas el DOM en el navegador (F12), verás que el Fragment
   // NO crea ningún <div> extra envolviendo las tarjetas.
@@ -44,8 +49,21 @@ export default function SintaxisYFragmentos() {
               type="text"
               className="input"
               placeholder="Ej.: Elena Martínez"
-              readOnly={false}
+              value={nombre}
+              onChange={(e) => setNombre(e.target.value)}
             />
+
+            {nombreLimpio.length > 0 && nombreLimpio.length < 3 && (
+              <p role="alert" style={{ color: 'var(--red)', fontSize: '0.88rem', marginTop: '0.4rem' }}>
+                El nombre debe tener al menos 3 caracteres.
+              </p>
+            )}
+
+            {nombreLimpio.length >= 3 && (
+              <p style={{ color: 'var(--green)', fontWeight: 'bold', marginTop: '0.4rem' }}>
+                Bienvenido/a al portal, {nombreLimpio}
+              </p>
+            )}
           </div>
 
           <div className="box box-warn">
