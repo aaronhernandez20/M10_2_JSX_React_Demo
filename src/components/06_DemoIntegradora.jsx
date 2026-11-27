@@ -55,15 +55,53 @@ function TarjetaExpediente({ alumno, seleccionado, onSeleccionar }) {
 }
 
 export default function DemoIntegradora() {
+  const [expedientes, setExpedientes] = useState(EXPEDIENTES);
   const [soloAprobados, setSoloAprobados] = useState(false);
   const [seleccionado, setSeleccionado] = useState(null);
   const [busqueda, setBusqueda] = useState('');
   const [orden, setOrden] = useState('nota-desc');
 
+  const [formNombre, setFormNombre] = useState('');
+  const [formNota, setFormNota] = useState('');
+  const [formModulos, setFormModulos] = useState('');
+  const [errorForm, setErrorForm] = useState('');
+
+  const agregarExpediente = (e) => {
+    e.preventDefault();
+    const nota = Number(formNota);
+
+    if (formNombre.trim() === '') {
+      setErrorForm('El nombre es obligatorio.');
+      return;
+    }
+    if (formNota === '' || nota < 0 || nota > 10) {
+      setErrorForm('La nota debe ser un número entre 0 y 10.');
+      return;
+    }
+
+    const listaModulos = formModulos
+      .split(',')
+      .map((m) => m.trim().toUpperCase())
+      .filter((m) => m !== '');
+
+    const nuevo = {
+      id: Date.now(),
+      nombre: formNombre.trim(),
+      nota: nota,
+      modulos: listaModulos
+    };
+
+    setExpedientes([...expedientes, nuevo]);
+    setFormNombre('');
+    setFormNota('');
+    setFormModulos('');
+    setErrorForm('');
+  };
+
   const textoBusqueda = busqueda.trim().toLowerCase();
 
   // Primero filtramos (aprobados + búsqueda) y después ordenamos una copia
-  const listaFiltrada = EXPEDIENTES.filter((a) => {
+  const listaFiltrada = expedientes.filter((a) => {
     const cumpleAprobado = soloAprobados ? a.nota >= 5 : true;
     const cumpleBusqueda = a.nombre.toLowerCase().includes(textoBusqueda);
     return cumpleAprobado && cumpleBusqueda;
@@ -82,6 +120,53 @@ export default function DemoIntegradora() {
         <p className="subtitle">
           Composición de componentes reutilizables aplicando todas las reglas de JSX.
         </p>
+
+        <form onSubmit={agregarExpediente} className="box" style={{ marginBottom: '1rem' }}>
+          <h3 style={{ marginTop: 0 }}>Añadir nuevo expediente</h3>
+          <div className="btn-row" style={{ alignItems: 'flex-end' }}>
+            <div style={{ flex: '1 1 200px' }}>
+              <label htmlFor="form-nombre">Nombre *</label>
+              <input
+                id="form-nombre"
+                type="text"
+                className="input"
+                placeholder="Ej.: Pablo Ruiz"
+                value={formNombre}
+                onChange={(e) => setFormNombre(e.target.value)}
+              />
+            </div>
+            <div style={{ flex: '0 1 110px' }}>
+              <label htmlFor="form-nota">Nota (0-10)</label>
+              <input
+                id="form-nota"
+                type="number"
+                className="input"
+                min="0"
+                max="10"
+                step="0.1"
+                value={formNota}
+                onChange={(e) => setFormNota(e.target.value)}
+              />
+            </div>
+            <div style={{ flex: '1 1 200px' }}>
+              <label htmlFor="form-modulos">Módulos (separados por comas)</label>
+              <input
+                id="form-modulos"
+                type="text"
+                className="input"
+                placeholder="Ej.: DI, PSP, AD"
+                value={formModulos}
+                onChange={(e) => setFormModulos(e.target.value)}
+              />
+            </div>
+            <button type="submit" className="btn">Añadir expediente</button>
+          </div>
+          {errorForm && (
+            <p role="alert" style={{ color: 'var(--red)', fontSize: '0.88rem', marginTop: '0.5rem' }}>
+              {errorForm}
+            </p>
+          )}
+        </form>
 
         <div className="btn-row" style={{ marginBottom: '1rem', alignItems: 'center' }}>
           <button
