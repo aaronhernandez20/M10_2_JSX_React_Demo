@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import ResumenKPIs from './ResumenKPIs.jsx';
 
 // ============================================================================
@@ -17,6 +17,20 @@ const EXPEDIENTES = [
   { id: 102, nombre: 'Marcos Vega', nota: 4.3, modulos: ['DI', 'SGE'] },
   { id: 103, nombre: 'Sofía Navarro', nota: 9.5, modulos: ['DI', 'PSP', 'AD', 'PMDM'] }
 ];
+
+const CLAVE_STORAGE = 'expedientes-dam2';
+
+function cargarExpedientes() {
+  const guardados = localStorage.getItem(CLAVE_STORAGE);
+  if (guardados) {
+    try {
+      return JSON.parse(guardados);
+    } catch (error) {
+      return EXPEDIENTES;
+    }
+  }
+  return EXPEDIENTES;
+}
 
 function TarjetaExpediente({ alumno, seleccionado, onSeleccionar }) {
   const aprobado = alumno.nota >= 5;
@@ -56,7 +70,7 @@ function TarjetaExpediente({ alumno, seleccionado, onSeleccionar }) {
 }
 
 export default function DemoIntegradora() {
-  const [expedientes, setExpedientes] = useState(EXPEDIENTES);
+  const [expedientes, setExpedientes] = useState(cargarExpedientes);
   const [soloAprobados, setSoloAprobados] = useState(false);
   const [seleccionado, setSeleccionado] = useState(null);
   const [busqueda, setBusqueda] = useState('');
@@ -66,6 +80,17 @@ export default function DemoIntegradora() {
   const [formNota, setFormNota] = useState('');
   const [formModulos, setFormModulos] = useState('');
   const [errorForm, setErrorForm] = useState('');
+
+  // Cada vez que cambia la lista se guarda en localStorage
+  useEffect(() => {
+    localStorage.setItem(CLAVE_STORAGE, JSON.stringify(expedientes));
+  }, [expedientes]);
+
+  const restablecerDatos = () => {
+    localStorage.removeItem(CLAVE_STORAGE);
+    setExpedientes(EXPEDIENTES);
+    setSeleccionado(null);
+  };
 
   const agregarExpediente = (e) => {
     e.preventDefault();
@@ -186,6 +211,10 @@ export default function DemoIntegradora() {
             value={busqueda}
             onChange={(e) => setBusqueda(e.target.value)}
           />
+
+          <button type="button" className="btn btn-danger" onClick={restablecerDatos}>
+            Restablecer datos iniciales
+          </button>
 
           <select
             className="input"
