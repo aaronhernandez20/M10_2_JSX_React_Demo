@@ -15,21 +15,37 @@ import { useState } from 'react';
 //      pinta como texto plano seguro sin ejecutar código JavaScript.
 // ============================================================================
 
+const PAYLOADS = [
+  { id: 'p1', nombre: 'Script', codigo: "<script>alert('XSS')</script>" },
+  { id: 'p2', nombre: 'Imagen onerror', codigo: "<img src=x onerror=alert('XSS')>" },
+  { id: 'p3', nombre: 'Enlace javascript:', codigo: "<a href=\"javascript:alert('XSS')\">Haz clic</a>" }
+];
+
 export default function EventosYSeguridadXSS() {
-  const [ultimoEvento, setUltimoEvento] = useState('Ninguno todavía');
+  const [historial, setHistorial] = useState([]);
+  const [contador, setContador] = useState(1);
   const [entradaUsuario, setEntradaUsuario] = useState(
     "<img src=x onerror='alert'('Ataque XSS') ' /> <script>alert('Hack')</script>"
   );
 
+  // Guarda el evento al principio y se queda solo con los 5 más recientes
+  const registrarEvento = (texto) => {
+    const nuevo = { id: contador, texto: texto };
+    setHistorial([nuevo, ...historial].slice(0, 5));
+    setContador(contador + 1);
+  };
+
   // Manejador sin parámetros (se pasa como referencia: onClick={manejarClickSimple})
   const manejarClickSimple = () => {
-    setUltimoEvento(`Clic simple registrado a las ${new Date().toLocaleTimeString()}`);
+    registrarEvento(`Clic simple registrado a las ${new Date().toLocaleTimeString()}`);
   };
 
   // Manejador con parámetros (requiere función flecha: onClick={() => manejarConParametro(...)})
   const manejarConParametro = (accion) => {
-    setUltimoEvento(`Acción ejecutada con parámetro: "${accion}"`);
+    registrarEvento(`Acción ejecutada con parámetro: "${accion}"`);
   };
+
+  const ultimoEvento = historial.length > 0 ? historial[0].texto : 'Ninguno todavía';
 
   return (
     <section className="card">
@@ -42,7 +58,7 @@ export default function EventosYSeguridadXSS() {
         <div className="box box-success">
           <h3>Sintaxis de Eventos (Synthetic Events)</h3>
           <p style={{ fontSize: '0.9rem', color: 'var(--text-soft)' }}>
-            Último evento: <strong style={{ color: '#38bdf8' }}>{ultimoEvento}</strong>
+            Último evento: <strong style={{ color: 'var(--primary)' }}>{ultimoEvento}</strong>
           </p>
           <div className="btn-row">
             {/* Referencia directa a la función */}
@@ -58,6 +74,30 @@ export default function EventosYSeguridadXSS() {
               onClick=&#123;() =&gt; fn(arg)&#125;
             </button>
           </div>
+
+          <h3>Historial (últimos 5 eventos)</h3>
+          {historial.length === 0 ? (
+            <p style={{ fontSize: '0.88rem', color: 'var(--muted)' }}>Todavía no hay eventos registrados.</p>
+          ) : (
+            <ul className="list" style={{ marginTop: '0.4rem' }}>
+              {historial.map((evento) => (
+                <li key={evento.id} className="list-item" style={{ fontSize: '0.85rem' }}>
+                  <span>#{evento.id}</span>
+                  <span>{evento.texto}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          <button
+            type="button"
+            className="btn btn-danger"
+            style={{ marginTop: '0.75rem' }}
+            disabled={historial.length === 0}
+            onClick={() => setHistorial([])}
+          >
+            Limpiar historial
+          </button>
         </div>
 
         <div className="box box-warn">
@@ -70,6 +110,19 @@ export default function EventosYSeguridadXSS() {
             value={entradaUsuario}
             onChange={(e) => setEntradaUsuario(e.target.value)}
           />
+
+          <div className="btn-row" style={{ marginTop: '0.6rem' }}>
+            {PAYLOADS.map((payload) => (
+              <button
+                key={payload.id}
+                type="button"
+                className="btn btn-secondary"
+                onClick={() => setEntradaUsuario(payload.codigo)}
+              >
+                Cargar payload XSS de prueba: {payload.nombre}
+              </button>
+            ))}
+          </div>
           <div
             style={{
               marginTop: '0.75rem',
