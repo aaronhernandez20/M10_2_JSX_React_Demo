@@ -47,9 +47,6 @@ export default function RenderizadoCondicional() {
         <button type="button" className="btn" onClick={() => setNotificaciones((n) => n + 1)}>
           +1 Notificación ({notificaciones})
         </button>
-        <button type="button" className="btn btn-danger" onClick={() => setNotificaciones(0)}>
-          Poner a 0
-        </button>
       </div>
 
       <div className="grid-2">
@@ -66,27 +63,31 @@ export default function RenderizadoCondicional() {
           </p>
         </div>
 
-        {/* 3. OPERADOR && — COMPARATIVA CON Y SIN LA TRAMPA DEL 0 */}
+        {/* 3. OPERADOR && CORREGIDO: comparación explícita con > 0 */}
         <div className="box box-danger">
-          <h3>Demostración en vivo: la Trampa del 0</h3>
-          <p style={{ fontSize: '0.88rem', color: 'var(--text-soft)', marginBottom: '0.5rem' }}>
-            Pon el contador a <strong>0</strong> y observa la diferencia entre ambos bloques:
-          </p>
+          <h3>Centro de notificaciones</h3>
 
-          <p>
-            <strong>Incorrecto</strong> (<code className="code-inline">notificaciones &amp;&amp; ...</code>):{' '}
-            {/* BUG INTENCIONADO CON FINES DIDÁCTICOS: cuando vale 0, pinta "0" */}
-            <span style={{ color: '#f87171', fontWeight: 'bold' }}>
-              {notificaciones && <span>Tienes {notificaciones} avisos</span>}
-            </span>
-          </p>
+          {notificaciones > 0 && (
+            <p style={{ color: 'var(--amber)', fontWeight: 'bold' }}>
+              Tienes {notificaciones} notificaciones pendientes
+            </p>
+          )}
 
-          <p style={{ marginTop: '0.4rem' }}>
-            <strong>Correcto</strong> (<code className="code-inline">notificaciones &gt; 0 &amp;&amp; ...</code>):{' '}
-            <span style={{ color: '#34d399', fontWeight: 'bold' }}>
-              {notificaciones > 0 && <span>Tienes {notificaciones} avisos</span>}
-            </span>
-          </p>
+          {notificaciones === 0 && (
+            <p style={{ color: 'var(--green)', fontWeight: 'bold' }}>
+              Estás al día. No tienes notificaciones pendientes
+            </p>
+          )}
+
+          <button
+            type="button"
+            className="btn"
+            style={{ marginTop: '0.6rem' }}
+            disabled={notificaciones === 0}
+            onClick={() => setNotificaciones(0)}
+          >
+            Marcar todas como leídas
+          </button>
         </div>
       </div>
 
