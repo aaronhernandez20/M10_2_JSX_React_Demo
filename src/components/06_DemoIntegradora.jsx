@@ -24,7 +24,7 @@ function TarjetaExpediente({ alumno, seleccionado, onSeleccionar }) {
     <article
       className="box"
       style={{
-        borderColor: seleccionado ? '#38bdf8' : 'var(--border)',
+        borderColor: seleccionado ? 'var(--primary)' : 'var(--border)',
         borderWidth: seleccionado ? '2px' : '1px'
       }}
     >
@@ -57,10 +57,23 @@ function TarjetaExpediente({ alumno, seleccionado, onSeleccionar }) {
 export default function DemoIntegradora() {
   const [soloAprobados, setSoloAprobados] = useState(false);
   const [seleccionado, setSeleccionado] = useState(null);
+  const [busqueda, setBusqueda] = useState('');
+  const [orden, setOrden] = useState('nota-desc');
 
-  const listaFiltrada = soloAprobados
-    ? EXPEDIENTES.filter((a) => a.nota >= 5)
-    : EXPEDIENTES;
+  const textoBusqueda = busqueda.trim().toLowerCase();
+
+  // Primero filtramos (aprobados + búsqueda) y después ordenamos una copia
+  const listaFiltrada = EXPEDIENTES.filter((a) => {
+    const cumpleAprobado = soloAprobados ? a.nota >= 5 : true;
+    const cumpleBusqueda = a.nombre.toLowerCase().includes(textoBusqueda);
+    return cumpleAprobado && cumpleBusqueda;
+  });
+
+  const listaOrdenada = [...listaFiltrada].sort((a, b) => {
+    if (orden === 'nota-desc') return b.nota - a.nota;
+    if (orden === 'nota-asc') return a.nota - b.nota;
+    return a.nombre.localeCompare(b.nombre);
+  });
 
   return (
     <>
@@ -79,6 +92,26 @@ export default function DemoIntegradora() {
             {soloAprobados ? 'Mostrar todos los alumnos' : 'Filtrar solo aprobados (>= 5)'}
           </button>
 
+          <input
+            type="text"
+            className="input"
+            style={{ flex: '1 1 220px', marginTop: 0 }}
+            placeholder="Buscar alumno por nombre..."
+            value={busqueda}
+            onChange={(e) => setBusqueda(e.target.value)}
+          />
+
+          <select
+            className="input"
+            style={{ flex: '0 1 220px', marginTop: 0 }}
+            value={orden}
+            onChange={(e) => setOrden(e.target.value)}
+          >
+            <option value="nota-desc">Nota (mayor a menor)</option>
+            <option value="nota-asc">Nota (menor a mayor)</option>
+            <option value="nombre">Nombre (A-Z)</option>
+          </select>
+
           {seleccionado && (
             <span className="pill">
               Seleccionado: {seleccionado.nombre} (ID #{seleccionado.id})
@@ -86,8 +119,12 @@ export default function DemoIntegradora() {
           )}
         </div>
 
+        {listaOrdenada.length === 0 && (
+          <p className="box box-warn">No se encontraron expedientes con esos criterios</p>
+        )}
+
         <div className="grid-2">
-          {listaFiltrada.map((alumno) => (
+          {listaOrdenada.map((alumno) => (
             <TarjetaExpediente
               key={alumno.id}
               alumno={alumno}
