@@ -295,3 +295,30 @@ body {
   opacity: 0.45;
   cursor: not-allowed;
 }
+
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.kpi {
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.8rem 1rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.kpi-titulo {
+  color: var(--muted);
+  font-size: 0.82rem;
+  text-transform: uppercase;
+}
+
+.kpi-valor {
+  font-size: 1.6rem;
+  color: var(--primary);
+}

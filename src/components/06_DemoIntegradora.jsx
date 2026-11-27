@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import ResumenKPIs from './ResumenKPIs.jsx';
 
 // ============================================================================
 // [CLAVE EXPOSICIÓN 6] DEMO INTEGRADORA DE TODAS LAS CARACTERÍSTICAS DE JSX
@@ -203,6 +204,8 @@ export default function DemoIntegradora() {
             </span>
           )}
         </div>
+
+        <ResumenKPIs alumnos={listaOrdenada} />
 
         {listaOrdenada.length === 0 && (
           <p className="box box-warn">No se encontraron expedientes con esos criterios</p>
