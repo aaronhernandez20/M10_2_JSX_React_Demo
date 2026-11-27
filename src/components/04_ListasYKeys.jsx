@@ -21,10 +21,20 @@ const MODULOS_INICIALES = [
 export default function ListasYKeys() {
   const [modulos, setModulos] = useState(MODULOS_INICIALES);
   const [nuevoNombre, setNuevoNombre] = useState('');
+  const [error, setError] = useState('');
+  const [busqueda, setBusqueda] = useState('');
 
   const agregarModulo = (e) => {
     e.preventDefault();
     if (!nuevoNombre.trim()) return;
+
+    const repetido = modulos.some(
+      (m) => m.nombre.toLowerCase() === nuevoNombre.trim().toLowerCase()
+    );
+    if (repetido) {
+      setError(`El módulo "${nuevoNombre.trim()}" ya existe en la lista.`);
+      return;
+    }
 
     const nuevo = {
       id: `mod-${Date.now()}`, // ID único estable (mejor que usar el índice del array)
@@ -35,6 +45,7 @@ export default function ListasYKeys() {
     // Insertamos al principio para demostrar que React conserva la identidad de cada fila
     setModulos([nuevo, ...modulos]);
     setNuevoNombre('');
+    setError('');
   };
 
   const eliminarModulo = (idAEliminar) => {
@@ -44,6 +55,13 @@ export default function ListasYKeys() {
   const invertirOrden = () => {
     setModulos([...modulos].reverse());
   };
+
+  const textoBusqueda = busqueda.trim().toLowerCase();
+  const modulosFiltrados = modulos.filter(
+    (m) =>
+      m.nombre.toLowerCase().includes(textoBusqueda) ||
+      m.codigo.toLowerCase().includes(textoBusqueda)
+  );
 
   return (
     <section className="card">
@@ -60,7 +78,10 @@ export default function ListasYKeys() {
           style={{ flex: '1 1 260px', marginTop: 0 }}
           placeholder="Añadir nuevo módulo al principio de la lista..."
           value={nuevoNombre}
-          onChange={(e) => setNuevoNombre(e.target.value)}
+          onChange={(e) => {
+            setNuevoNombre(e.target.value);
+            setError('');
+          }}
         />
         <button type="submit" className="btn">Añadir módulo</button>
         <button type="button" className="btn btn-secondary" onClick={invertirOrden}>
@@ -68,8 +89,27 @@ export default function ListasYKeys() {
         </button>
       </form>
 
+      {error && (
+        <p role="alert" style={{ color: 'var(--red)', fontSize: '0.88rem', marginTop: '0.5rem' }}>
+          {error}
+        </p>
+      )}
+
+      <input
+        type="text"
+        className="input"
+        style={{ marginTop: '1rem' }}
+        placeholder="Buscar por nombre o código (ej.: DI, Acceso...)"
+        value={busqueda}
+        onChange={(e) => setBusqueda(e.target.value)}
+      />
+
+      <p className="subtitle" style={{ marginTop: '0.6rem' }}>
+        Mostrando {modulosFiltrados.length} de {modulos.length} módulos
+      </p>
+
       <ul className="list">
-        {modulos.map((modulo) => (
+        {modulosFiltrados.map((modulo) => (
           // [CLAVE EXPOSICIÓN] La `key` va siempre en el elemento raíz del `.map()`
           <li key={modulo.id} className="list-item">
             <div>
@@ -89,6 +129,12 @@ export default function ListasYKeys() {
           </li>
         ))}
       </ul>
+
+      {modulos.length > 0 && modulosFiltrados.length === 0 && (
+        <p className="subtitle" style={{ marginTop: '0.75rem' }}>
+          Ningún módulo coincide con la búsqueda.
+        </p>
+      )}
 
       {modulos.length === 0 && (
         <p className="subtitle" style={{ marginTop: '0.75rem' }}>
